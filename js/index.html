@@ -1,0 +1,76 @@
+// Seleção dos elementos do DOM
+const logDiv = document.getElementById('log');
+const campos = {
+    codigo: document.getElementById('inpCodigo'),
+    nome: document.getElementById('inpNome'),
+    autor: document.getElementById('inpAutor'),
+    paginas: document.getElementById('inpPaginas')
+};
+
+// Carrega os dados do localStorage ou inicia um array vazio
+let biblioteca = JSON.parse(localStorage.getItem('biblioteca_db')) || [];
+
+function atualizarLog(mensagem) {
+    logDiv.innerHTML += `<br>> ${mensagem}`;
+    logDiv.scrollTop = logDiv.scrollHeight; // Auto-scroll
+}
+
+function salvarDados() {
+    localStorage.setItem('biblioteca_db', JSON.stringify(biblioteca));
+}
+
+function btnCadastrar() {
+    const livro = {
+        codigo: campos.codigo.value,
+        nome: campos.nome.value,
+        autor: campos.autor.value,
+        paginas: campos.paginas.value
+    };
+
+    if (!livro.codigo || !livro.nome) {
+        atualizarLog('<span style="color: #ff4444;">Erro: Código e Título são obrigatórios.</span>');
+        return;
+    }
+
+    biblioteca.push(livro);
+    salvarDados();
+    atualizarLog(`Sucesso: "${livro.nome}" cadastrado.`);
+    
+    // Limpar campos
+    Object.values(campos).forEach(input => input.value = '');
+}
+
+function btnListar() {
+    logDiv.innerHTML = "--- Lista de Livros ---";
+    if (biblioteca.length === 0) {
+        atualizarLog("Biblioteca vazia.");
+        return;
+    }
+    biblioteca.forEach(l => {
+        atualizarLog(`[Cod: ${l.codigo}] ${l.nome} - ${l.autor} (${l.paginas} pgs)`);
+    });
+}
+
+function btnRemover() {
+    const cod = campos.codigo.value;
+    const inicial = biblioteca.length;
+    biblioteca = biblioteca.filter(l => l.codigo !== cod);
+    
+    if (biblioteca.length < inicial) {
+        salvarDados();
+        atualizarLog(`Removido código: ${cod}`);
+    } else {
+        atualizarLog(`Código ${cod} não encontrado.`);
+    }
+}
+
+function btnBuscar() {
+    const cod = campos.codigo.value;
+    const encontrado = biblioteca.find(l => l.codigo === cod);
+    
+    if (encontrado) {
+        atualizarLog(`Encontrado: ${encontrado.nome} (Autor: ${encontrado.autor})`);
+    } else {
+        atualizarLog(`Código ${cod} não existe no sistema.`);
+    }
+}
